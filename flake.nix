@@ -50,6 +50,7 @@
         postInstall = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
           mv $out/bin/visua $out/bin/_visua
           echo "#!/bin/sh" > $out/bin/visua
+          # TODO: copy shaders over somehow
           echo "ALSA_PLUGIN_DIR=${pkgs.alsa-plugins}/lib/alsa-lib nixGL $out/bin/_visua" >> $out/bin/visua
           chmod a+x $out/bin/visua
         '';

@@ -3,7 +3,7 @@ build/
 .direnv
 
 # nix
-result/
+result
 
 # Prerequisites
 *.d
