@@ -49,22 +49,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-with-nvidia-driver-fix": {
-      "locked": {
-        "lastModified": 1679654343,
-        "narHash": "sha256-T2v0cmTWstqhUDhU/lgMpY5YnCmtoaKZ7oSTIM93ERk=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "90c44c959814b11009fe3abb33344fa6f5e6d290",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "pull/222762/head",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1680669251,
@@ -84,8 +68,7 @@
     "root": {
       "inputs": {
         "nixgl": "nixgl",
-        "nixpkgs": "nixpkgs_2",
-        "nixpkgs-with-nvidia-driver-fix": "nixpkgs-with-nvidia-driver-fix"
+        "nixpkgs": "nixpkgs_2"
       }
     }
   },

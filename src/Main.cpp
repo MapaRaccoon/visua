@@ -1,12 +1,11 @@
 #include <glbinding/gl/bitfield.h>
 #define GLFW_INCLUDE_NONE
-
 #include <glbinding/gl/gl.h>
 #include <glbinding/glbinding.h>
-
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
+
+#include "portaudiocpp/PortAudioCpp.hxx"
 
 #include <iostream>
 #include <vector>
@@ -19,21 +18,31 @@ gl::GLsizei width  = 800;
 gl::GLsizei height = 608;
 
 GLFWwindow * initializeWindow( const char * name, gl::GLsizei width, gl::GLsizei height );
-void         framebuffer_size_callback( GLFWwindow * window, int width, int height );
-void glfw_error(int error, const char* msg);
+void         framebufferSizeCallback( GLFWwindow * window, int width, int height );
+void glfwError(int error, const char* msg);
+void processInput(GLFWwindow *window);
+
+portaudio::Device *findPulseDevice( portaudio::System &sys );
+void listDevices( portaudio::System &sys );
 
 int main( void )
 {
-    glfwSetErrorCallback(glfw_error);
+    // portaudio stuff
+    portaudio::AutoSystem autoSys;
+    portaudio::System &sys = portaudio::System::instance();
+    listDevices(sys);
+
+    // OpenGL stuff
+    glfwSetErrorCallback(glfwError);
     auto window = initializeWindow( "game", width, height );
     if ( window == nullptr )
         return -1;
 
 
     static const GLfloat triangleVerts[] = {
-        -1.0f, 0.0f, 0.0f,
-         0.0f, 1.0f, 0.0f,
-         1.0f, 0.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,
+        -1.0f,  3.0f, 0.0f,
+         3.0f, -1.0f, 0.0f,
     };
 
     GLuint va;
@@ -48,7 +57,7 @@ int main( void )
     glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVerts), triangleVerts, GL_STATIC_DRAW);
 
     while ( !glfwWindowShouldClose( window ) ) {
-        glfwPollEvents();
+        processInput(window);
 
         glClearColor( 0, 0, 1, 0 );
         glClear( GL_COLOR_BUFFER_BIT );
@@ -68,6 +77,7 @@ int main( void )
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glDisableVertexAttribArray(0);
 
+        glfwPollEvents();
         glfwSwapBuffers( window );
     }
 
@@ -99,17 +109,57 @@ GLFWwindow * initializeWindow( const char * name, gl::GLsizei width, gl::GLsizei
     glbinding::initialize( glfwGetProcAddress );
 
     glViewport( 0, 0, width, height );
-    glfwSetFramebufferSizeCallback( window, framebuffer_size_callback );
+    glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
     // glfwSetCursorPosCallback( window, mouse_callback );
 
     return window;
 }
 
-void framebuffer_size_callback( GLFWwindow * window, int width, int height )
+void framebufferSizeCallback( GLFWwindow * window, int width, int height )
 {
     glViewport( 0, 0, width, height );
 }
 
-void glfw_error(int error, const char* msg) {
+void glfwError(int error, const char* msg) {
     std::cout << "grrr (" << error << "): " << msg << std::endl;
 }
+
+void processInput(GLFWwindow *window) {
+    if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+
+}
+
+portaudio::Device *findPulseDevice( portaudio::System &sys )
+{
+    // loop through devices found on the system
+    for ( auto &&devIter = sys.devicesBegin(); devIter != sys.devicesEnd(); devIter++ ) {
+        // find PulseAudio device, called "pulse"
+        if ( devIter->name() == std::string( "pulse" ) ) {
+            // Dereference iterator into Device, then get the address
+            // This device has static lifetime beginning with System initialization
+            return &*devIter;
+        }
+    }
+
+    // if pulse device not found, return nothing
+    return nullptr;
+}
+
+void listDevices( portaudio::System &sys )
+{
+    // loop through devices found on the system
+    for ( auto &&dev = sys.devicesBegin(); dev != sys.devicesEnd(); dev++ ) {
+        // find PulseAudio device, called "pulse"
+        std::string inputType = dev->isInputOnlyDevice() 
+            ? "input-only"
+            : dev->isOutputOnlyDevice() 
+            ? "output-only"
+            : dev->isFullDuplexDevice()
+            ? "full-duplex"
+            : "unknown-input-type";
+        std::cout << "(" << dev->index() << ") " << dev->name() << "; " << inputType << std::endl;
+    }
+}
+

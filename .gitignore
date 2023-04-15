@@ -2,6 +2,8 @@ build/
 .cache
 .direnv
 
+# nix
+result/
 
 # Prerequisites
 *.d
