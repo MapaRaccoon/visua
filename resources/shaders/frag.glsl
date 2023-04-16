@@ -1,14 +1,17 @@
 #version 330 core
 
-in vec2 vPos;
+#define PI 3.1415926536
 
+in vec2 vPos;
 out vec3 color;
 
 vec3 hsv2rgb(vec3 c);
 
 void main() {
-    float hue = length(vPos);
-    color = hsv2rgb(vec3(hue, 1.0f, 1.0f));
+    float mag = length(vPos);
+    float hue = mag;
+    float sat = (sin(mag * 2 * PI * 5 ) + 1)/4;
+    color = hsv2rgb(vec3(hue, sat, 1.0f));
 }
 
 // All components are in the range [0…1], including hue.

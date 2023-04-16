@@ -1,0 +1,4 @@
+#!/bin/sh
+
+nix build --impure
+ln -sf ./result/compile_commands.json ./compile_commands.json
