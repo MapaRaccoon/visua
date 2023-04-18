@@ -1,4 +1,4 @@
-#include "Shader.h"
+#include "Shader.hpp"
 #include <glbinding/gl/bitfield.h>
 #define GLFW_INCLUDE_NONE
 

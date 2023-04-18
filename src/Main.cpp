@@ -7,13 +7,13 @@
 #include <glm/glm.hpp>
 
 #include "Stereo.hpp"
-#include "portaudiocpp/PortAudioCpp.hxx"
+#include <portaudiocpp/PortAudioCpp.hxx>
 
 #include <iostream>
 #include <vector>
 
 #include "Audio.hpp"
-#include "Shader.h"
+#include "Shader.hpp"
 
 using namespace gl;
 

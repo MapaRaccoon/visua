@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Stereo.hpp"
-#include "portaudiocpp/PortAudioCpp.hxx"
+#include <portaudiocpp/PortAudioCpp.hxx>
 #include <boost/lockfree/spsc_queue.hpp>
 
 namespace sfx
