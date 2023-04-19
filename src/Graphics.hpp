@@ -20,9 +20,9 @@ class Window
     ~Window();
 
     static std::optional<Window> create( std::string name, gl::GLsizei width, gl::GLsizei height );
+
     int getKey( int key );
     bool isKeyDown( int key );
-
     bool shouldClose();
     void swapBuffers();
     void setShouldClose( bool );
