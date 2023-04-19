@@ -16,9 +16,7 @@ find_package(Boost REQUIRED)
 
 set(PORTAUDIO_COMMON_PATH "${CMAKE_SOURCE_DIR}/external/portaudio/common")
 file ( GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${PORTAUDIO_COMMON_PATH}/*.c" )
-message("woof")
 message("${SOURCES}")
-message("woof")
 add_executable(visua ${SOURCES})
 
 target_include_directories(visua PRIVATE
