@@ -51,7 +51,7 @@ Window &Window::operator=( Window &&other )
 
 std::optional<Window> Window::create( std::string name, gl::GLsizei width, gl::GLsizei height )
 {
-    glfwInit();
+    if (!glfwInit()) return {};
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );

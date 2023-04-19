@@ -37,6 +37,8 @@ int main( void )
     // OpenGL stuff
     if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
         sim::run( *window, rbuf );
+    } else {
+        std::cerr << "failed to create GLFW window" << std::endl;
     }
 
     return 0;
