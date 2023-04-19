@@ -1,6 +1,8 @@
 #include <glbinding/gl/bitfield.h>
 #define GLFW_INCLUDE_NONE
 #include "Audio.hpp"
+#include "Graphics.hpp"
+#include "Simulation.hpp"
 #include "Stereo.hpp"
 #include <GLFW/glfw3.h>
 #include <boost/lockfree/spsc_queue.hpp>
@@ -10,10 +12,6 @@
 #include <iostream>
 #include <portaudiocpp/PortAudioCpp.hxx>
 #include <vector>
-#include "Graphics.hpp"
-#include "Simulation.hpp"
-
-using namespace gl;
 
 const gl::GLsizei WIDTH = 800;
 const gl::GLsizei HEIGHT = 608;
@@ -37,9 +35,8 @@ int main( void )
     auto streamInputGuard = sfx::StreamGuard( stream );
 
     // OpenGL stuff
-    if (auto window = gfx::Window::create("woof", WIDTH, HEIGHT))
-    {
-        sim::run(*window, rbuf);
+    if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
+        sim::run( *window, rbuf );
     }
 
     return 0;

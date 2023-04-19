@@ -1,7 +1,7 @@
 #include "Audio.hpp"
 
-#include <portaudiocpp/PortAudioCpp.hxx>
 #include <boost/lockfree/spsc_queue.hpp>
+#include <portaudiocpp/PortAudioCpp.hxx>
 
 #include "Stereo.hpp"
 

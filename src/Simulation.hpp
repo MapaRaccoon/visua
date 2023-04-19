@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/lockfree/spsc_queue.hpp>
-#include "Stereo.hpp"
 #include "Graphics.hpp"
+#include "Stereo.hpp"
+#include <boost/lockfree/spsc_queue.hpp>
 
 namespace sim
 {
