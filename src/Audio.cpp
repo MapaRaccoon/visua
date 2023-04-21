@@ -15,7 +15,7 @@ portaudio::Device *findPulseDevice( portaudio::System &sys )
         // find PulseAudio device, called "pulse"
         if ( devIter->name() == std::string( "pulse" ) ) {
             // Dereference iterator into Device, then get the address
-            // This device has static lifetime beginning with System initialization
+            // This device is owned by the system
             return &*devIter;
         }
     }
@@ -28,7 +28,6 @@ void listDevices( portaudio::System &sys )
 {
     // loop through devices found on the system
     for ( auto &&dev = sys.devicesBegin(); dev != sys.devicesEnd(); dev++ ) {
-        // find PulseAudio device, called "pulse"
         std::string inputType = dev->isInputOnlyDevice()    ? "input-only"
                                 : dev->isOutputOnlyDevice() ? "output-only"
                                 : dev->isFullDuplexDevice() ? "full-duplex"
