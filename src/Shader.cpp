@@ -7,101 +7,156 @@
 
 #include <glm/glm.hpp>
 
-#include <iostream>
+#include <boost/lexical_cast.hpp>
+
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <variant>
 #include <vector>
 
 using namespace gl;
 
-namespace gfx {
-
-GLuint loadShaders(std::string vertex_file_path, std::string fragment_file_path)
+namespace gfx
 {
-	// Create the shaders
-	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
-	// Read the Vertex Shader code from the file
-	std::string VertexShaderCode;
-	std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
-	if(VertexShaderStream.is_open()){
-		std::stringstream sstr;
-		sstr << VertexShaderStream.rdbuf();
-		VertexShaderCode = sstr.str();
-		VertexShaderStream.close();
-	}else{
-		printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_file_path.c_str());
-		getchar();
-		return 0;
-	}
+namespace raii
+{
 
-	// Read the Fragment Shader code from the file
-	std::string FragmentShaderCode;
-	std::ifstream FragmentShaderStream(fragment_file_path, std::ios::in);
-	if(FragmentShaderStream.is_open()){
-		std::stringstream sstr;
-		sstr << FragmentShaderStream.rdbuf();
-		FragmentShaderCode = sstr.str();
-		FragmentShaderStream.close();
-	}
+GLShader::GLShader( ShaderType shaderType ) : isValid( true )
+{
+    id = glCreateShader( shaderTypeToEnum( shaderType ) );
+}
 
-	auto Result = GL_FALSE;
-	int InfoLogLength;
+GLShader::GLShader( GLShader &&other ) : isValid( true )
+{
+    other.isValid = false;
+    std::swap( this->id, other.id );
+}
 
-	// Compile Vertex Shader
-	printf("Compiling shader : %s\n", vertex_file_path.c_str());
-	char const * VertexSourcePointer = VertexShaderCode.c_str();
-	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
-	glCompileShader(VertexShaderID);
+GLShader &GLShader::operator=( GLShader &&other )
+{
+    other.isValid = false;
+    if ( isValid )
+        glDeleteShader( id );
+    std::swap( this->id, other.id );
+    return *this;
+}
 
-	// Check Vertex Shader
-	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	if ( InfoLogLength > 0 ){
-		std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
-		glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-		printf("%s\n", &VertexShaderErrorMessage[0]);
-	}
+GLShader::~GLShader()
+{
+    if ( isValid )
+        glDeleteShader( id );
+}
 
-	// Compile Fragment Shader
-	printf("Compiling shader : %s\n", fragment_file_path.c_str());
-	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
-	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
-	glCompileShader(FragmentShaderID);
+GLProgram::GLProgram() : isValid( true )
+{
+    id = glCreateProgram();
+}
 
-	// Check Fragment Shader
-	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	if ( InfoLogLength > 0 ){
-		std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
-		glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-		printf("%s\n", &FragmentShaderErrorMessage[0]);
-	}
+GLProgram::GLProgram( GLProgram &&other ) : isValid( true )
+{
+    other.isValid = false;
+    std::swap( this->id, other.id );
+}
 
-	// Link the program
-	printf("Linking program\n");
-	GLuint ProgramID = glCreateProgram();
-	glAttachShader(ProgramID, VertexShaderID);
-	glAttachShader(ProgramID, FragmentShaderID);
-	glLinkProgram(ProgramID);
+GLProgram &GLProgram::operator=( GLProgram &&other )
+{
+    other.isValid = false;
+    if ( isValid )
+        glDeleteProgram( id );
+    std::swap( this->id, other.id );
 
-	// Check the program
-	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	if ( InfoLogLength > 0 ){
-		std::vector<char> ProgramErrorMessage(InfoLogLength+1);
-		glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-		printf("%s\n", &ProgramErrorMessage[0]);
-	}
-	
-	glDetachShader(ProgramID, VertexShaderID);
-	glDetachShader(ProgramID, FragmentShaderID);
-	
-	glDeleteShader(VertexShaderID);
-	glDeleteShader(FragmentShaderID);
+    this->isValid = true;
+    return *this;
+}
 
-	return ProgramID;
+GLProgram::~GLProgram()
+{
+    if ( isValid )
+        glDeleteProgram( id );
+}
+
+} // namespace raii
+
+Shader::Shader( raii::GLShader &&shader ) : internal( std::move( shader ) ) { }
+Program::Program( raii::GLProgram &&program ) : internal( std::move( program ) ) { }
+
+std::expected<Shader, ShaderError> Shader::create( ShaderType shaderType, const std::string &code )
+{
+    raii::GLShader shader( shaderType );
+
+    char const *pSrc = code.c_str();
+    glShaderSource( shader.id, 1, &pSrc, NULL );
+    glCompileShader( shader.id );
+
+    // check compile result
+    GLboolean compileResult = GL_FALSE;
+    int logLength;
+    glGetShaderiv( shader.id, GL_COMPILE_STATUS, &compileResult );
+    glGetShaderiv( shader.id, GL_INFO_LOG_LENGTH, &logLength );
+    if ( logLength > 0 ) {
+        std::vector<char> errorMessage( logLength + 1 );
+        glGetShaderInfoLog( shader.id, logLength, NULL, errorMessage.data() );
+        return std::unexpected( ShaderError{ .error = std::string( errorMessage.data() ) } );
+    }
+    return Shader( std::move( shader ) );
+}
+
+std::expected<Shader, ShaderError> Shader::fromFile( ShaderType shaderType, const std::string &filePath )
+{
+    const std::ifstream in( filePath, std::ios::in );
+    if ( in.fail() )
+        return std::unexpected( ShaderError{ .error = "file not found: " + filePath } );
+
+    std::stringstream buf;
+    buf << in.rdbuf();
+
+    return create( shaderType, buf.str() );
+}
+
+std::expected<Program, ShaderError> Program::create( std::vector<Shader> &shaders )
+{
+    raii::GLProgram program;
+    for ( auto &shader : shaders ) {
+        glAttachShader( program.id, shader.internal.id );
+    }
+
+    glLinkProgram( program.id );
+
+    for ( auto &shader : shaders ) {
+        glDetachShader( program.id, shader.internal.id );
+    }
+
+    // check link result
+    GLboolean linkSuccessful = GL_FALSE;
+    int logLength;
+    glGetProgramiv( program.id, GL_LINK_STATUS, &linkSuccessful );
+    glGetProgramiv( program.id, GL_INFO_LOG_LENGTH, &logLength );
+    if ( logLength > 0 && !linkSuccessful ) {
+        std::vector<char> errorMessage( logLength + 1 );
+        glGetProgramInfoLog( program.id, logLength, NULL, errorMessage.data() );
+        return std::unexpected( ShaderError{ .error = std::string( errorMessage.data() ) } );
+    }
+
+    return Program( std::move( program ) );
+}
+
+void Program::use()
+{
+    glUseProgram( internal.id );
+}
+
+GLenum shaderTypeToEnum( ShaderType shaderType )
+{
+    switch ( shaderType ) {
+    case ShaderType::Vertex:
+        return GL_VERTEX_SHADER;
+    case ShaderType::Fragment:
+        return GL_FRAGMENT_SHADER;
+    default:
+        throw std::runtime_error( "Unknown shader type: " );
+    }
 }
 
 } // namespace gfx

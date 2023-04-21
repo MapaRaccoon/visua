@@ -23,10 +23,8 @@ int main( void )
 
     std::cout << "Searching for PulseAudio device..." << std::endl;
     portaudio::Device *pulse = sfx::findPulseDevice( sys );
-    if ( !pulse ) {
-        std::cerr << "Pulse device not found" << std::endl;
-        return 1;
-    }
+    if ( !pulse )
+        throw std::runtime_error( "pulse device not found" );
 
     boost::lockfree::spsc_queue<Stereo<float>> rbuf( sfx::FRAMES_PER_BUFFER );
 
@@ -38,7 +36,7 @@ int main( void )
     if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
         sim::run( *window, rbuf );
     } else {
-        std::cerr << "failed to create GLFW window" << std::endl;
+        throw std::runtime_error("failed to create GLFW window");
     }
 
     return 0;

@@ -16,43 +16,38 @@ using namespace gl;
 
 void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf )
 {
-    std::vector<Stereo<float>> buf( sfx::FRAMES_PER_BUFFER );
+    auto program = makeShaderProgram();
 
+    // clang-format off
     static const GLfloat triangleVerts [] = {
-        -1.0f,
-        -1.0f,
-        0.0f,
-        -1.0f,
-        3.0f,
-        0.0f,
-        3.0f,
-        -1.0f,
-        0.0f,
+        -1.0f, -1.0f, 0.0f,
+        -1.0f, 3.0f, 0.0f,
+        3.0f, -1.0f, 0.0f,
     };
+    // clang-format on
 
     GLuint va;
     glGenVertexArrays( 1, &va );
     glBindVertexArray( va );
-
-    GLuint shader = gfx::loadShaders( "resources/shaders/vert.glsl", "resources/shaders/frag.glsl" );
 
     GLuint vb;
     glGenBuffers( 1, &vb );
     glBindBuffer( GL_ARRAY_BUFFER, vb );
     glBufferData( GL_ARRAY_BUFFER, sizeof( triangleVerts ), triangleVerts, GL_STATIC_DRAW );
 
+    std::vector<Stereo<float>> buf( sfx::FRAMES_PER_BUFFER );
     while ( !window.shouldClose() ) {
         if ( window.isKeyDown( GLFW_KEY_Q ) )
             window.setShouldClose( true );
         size_t numRead = rbuf.pop( buf.data(), sfx::FRAMES_PER_BUFFER );
         for ( int i = 0; i < numRead; i++ ) {
-            std::cout << buf [ i ] << std::endl;
+            //std::cout << buf [ i ] << std::endl;
         }
 
         glClearColor( 0, 0, 1, 0 );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        glUseProgram( shader );
+        program.use();
 
         glEnableVertexAttribArray( 0 );
         glBindBuffer( GL_ARRAY_BUFFER, vb );
@@ -74,7 +69,27 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf 
     std::cout << "GL cleanup..." << std::endl;
     glDeleteBuffers( 1, &vb );
     glDeleteVertexArrays( 1, &va );
-    glDeleteProgram( shader );
+}
+
+gfx::Program makeShaderProgram()
+{
+    auto vertexShader = gfx::Shader::fromFile( gfx::ShaderType::Vertex, "resources/shaders/vert.glsl" );
+    if ( !vertexShader )
+        throw std::runtime_error( "error creating vertex shader: " + vertexShader.error().error );
+
+    auto fragmentShader = gfx::Shader::fromFile( gfx::ShaderType::Fragment, "resources/shaders/frag.glsl" );
+    if ( !fragmentShader )
+        throw std::runtime_error( "error creating fragment shader: " + fragmentShader.error().error );
+
+    std::vector<gfx::Shader> shaders;
+    shaders.push_back( std::move( *vertexShader ) );
+    shaders.push_back( std::move( *fragmentShader ) );
+
+    auto program = gfx::Program::create( shaders );
+    if ( !program )
+        throw std::runtime_error( "error creating shader program: " + program.error().error );
+
+    return std::move(*program);
 }
 
 } // namespace sim
