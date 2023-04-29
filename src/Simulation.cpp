@@ -8,6 +8,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <glbinding/gl/gl.h>
 #include <glbinding/glbinding.h>
+#include <cmath>
 
 namespace sim
 {
@@ -35,14 +36,30 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf 
     glBindBuffer( GL_ARRAY_BUFFER, vb );
     glBufferData( GL_ARRAY_BUFFER, sizeof( triangleVerts ), triangleVerts, GL_STATIC_DRAW );
 
+    // create texture
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_1D, tex);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     std::vector<Stereo<float>> buf( sfx::FRAMES_PER_BUFFER );
+    std::vector<float> texData( sfx::FRAMES_PER_BUFFER );
     while ( !window.shouldClose() ) {
         if ( window.isKeyDown( GLFW_KEY_Q ) )
             window.setShouldClose( true );
+
+        // wait for full buffer
+        while (rbuf.write_available());
+
+        // populate texture data from sound
         size_t numRead = rbuf.pop( buf.data(), sfx::FRAMES_PER_BUFFER );
-        for ( int i = 0; i < numRead; i++ ) {
-            //std::cout << buf [ i ] << std::endl;
+        for (int i = 0; i < numRead; i++) {
+            texData[i] = std::abs(0.5 * (buf[i].left + buf[i].right));
+            std::cout << texData[i] << std::endl;
         }
+        glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, numRead, 0, GL_RED, GL_FLOAT, texData.data());
+        glGenerateMipmap(GL_TEXTURE_1D);
 
         glClearColor( 0, 0, 1, 0 );
         glClear( GL_COLOR_BUFFER_BIT );

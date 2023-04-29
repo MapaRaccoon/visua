@@ -21,7 +21,10 @@ int main( void )
     portaudio::AutoSystem autoSys;
     portaudio::System &sys = portaudio::System::instance();
 
-    std::cout << "Searching for PulseAudio device..." << std::endl;
+    std::cout << "Listing devices:" << std::endl;
+    sfx::listDevices(sys);
+
+    std::cout << "Searching for PipeWire device..." << std::endl;
     portaudio::Device *pulse = sfx::findPulseDevice( sys );
     if ( !pulse )
         throw std::runtime_error( "pulse device not found" );
