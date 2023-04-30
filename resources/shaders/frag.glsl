@@ -5,13 +5,18 @@
 in vec2 vPos;
 out vec3 color;
 
+uniform sampler1D tex;
+
 vec3 hsv2rgb(vec3 c);
 
 void main() {
     float mag = length(vPos);
-    float hue = mag;
-    float sat = (sin(mag * 2 * PI * 5 ) + 1)/4;
-    color = hsv2rgb(vec3(hue, sat, 1.0f));
+    //float hue = mag;
+    //float sat = (sin(mag * 2 * PI * 5 ) + 1)/4;
+    //float sat = 1;
+    //color = hsv2rgb(vec3(hue, sat, 1.0f));
+    float val = texture(tex, mag).r;
+    color = hsv2rgb(vec3(val, 1, 1));
 }
 
 // All components are in the range [0…1], including hue.

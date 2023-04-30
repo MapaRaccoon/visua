@@ -13,7 +13,7 @@ portaudio::Device *findPulseDevice( portaudio::System &sys )
     // loop through devices found on the system
     for ( auto &&devIter = sys.devicesBegin(); devIter != sys.devicesEnd(); devIter++ ) {
         // find PulseAudio device, called "pulse"
-        if ( devIter->name() == std::string( "pulse" ) ) {
+        if ( devIter->name() == std::string( "pipewire" ) ) {
             // Dereference iterator into Device, then get the address
             // This device is owned by the system
             return &*devIter;
@@ -47,7 +47,8 @@ int audioCallback(
 {
     auto rbuf = static_cast<boost::lockfree::spsc_queue<Stereo<float>> *>( userData );
     const Stereo<float> *in = static_cast<const Stereo<float> *>( inputBuffer );
-    rbuf->push( in, numFrames );
+    if (!rbuf->read_available())
+      rbuf->push( in, numFrames );
 
     return paContinue;
 }

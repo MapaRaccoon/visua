@@ -31,6 +31,7 @@
         alsa-lib
         alsa-plugins
         libpulseaudio
+        fftw
       ];
       buildTools = with pkgs; [
         nixgl.auto.nixGLDefault
