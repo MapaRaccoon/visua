@@ -11,4 +11,4 @@ namespace sim
 void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf, std::string resourcesPath );
 gfx::Program makeShaderProgram( std::string resourcesPath );
 
-}
+} // namespace sim

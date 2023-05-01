@@ -6,9 +6,9 @@
 #include "Shader.hpp"
 #include "Stereo.hpp"
 #include <boost/lockfree/spsc_queue.hpp>
+#include <cmath>
 #include <glbinding/gl/gl.h>
 #include <glbinding/glbinding.h>
-#include <cmath>
 
 namespace sim
 {
@@ -38,10 +38,10 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf,
 
     // create texture
     GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_1D, tex);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenTextures( 1, &tex );
+    glBindTexture( GL_TEXTURE_1D, tex );
+    glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
     std::vector<Stereo<float>> buf( sfx::FRAMES_PER_BUFFER );
     std::vector<float> texData( sfx::FRAMES_PER_BUFFER );
@@ -50,16 +50,17 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf,
             window.setShouldClose( true );
 
         // wait for full buffer
-        while (rbuf.write_available());
+        while ( rbuf.write_available() )
+            ;
 
         // populate texture data from sound
         size_t numRead = rbuf.pop( buf.data(), sfx::FRAMES_PER_BUFFER );
-        for (int i = 0; i < numRead; i++) {
-            texData[i] = std::abs(0.5 * (buf[i].left + buf[i].right));
-            std::cout << texData[i] << std::endl;
+        for ( int i = 0; i < numRead; i++ ) {
+            texData [ i ] = std::abs( 0.5 * ( buf [ i ].left + buf [ i ].right ) );
+            std::cout << texData [ i ] << std::endl;
         }
-        glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, numRead, 0, GL_RED, GL_FLOAT, texData.data());
-        glGenerateMipmap(GL_TEXTURE_1D);
+        glTexImage1D( GL_TEXTURE_1D, 0, GL_RED, numRead, 0, GL_RED, GL_FLOAT, texData.data() );
+        glGenerateMipmap( GL_TEXTURE_1D );
 
         glClearColor( 0, 0, 1, 0 );
         glClear( GL_COLOR_BUFFER_BIT );
@@ -90,17 +91,11 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf,
 
 gfx::Program makeShaderProgram( std::string resourcesPath )
 {
-    auto vertexShader = gfx::Shader::fromFile( 
-        gfx::ShaderType::Vertex,
-        resourcesPath + "/shaders/vert.glsl"
-    );
+    auto vertexShader = gfx::Shader::fromFile( gfx::ShaderType::Vertex, resourcesPath + "/shaders/vert.glsl" );
     if ( !vertexShader )
         throw std::runtime_error( "error creating vertex shader: " + vertexShader.error().error );
 
-    auto fragmentShader = gfx::Shader::fromFile(
-        gfx::ShaderType::Fragment,
-        resourcesPath + "/shaders/frag.glsl"
-    );
+    auto fragmentShader = gfx::Shader::fromFile( gfx::ShaderType::Fragment, resourcesPath + "/shaders/frag.glsl" );
     if ( !fragmentShader )
         throw std::runtime_error( "error creating fragment shader: " + fragmentShader.error().error );
 
@@ -112,7 +107,7 @@ gfx::Program makeShaderProgram( std::string resourcesPath )
     if ( !program )
         throw std::runtime_error( "error creating shader program: " + program.error().error );
 
-    return std::move(*program);
+    return std::move( *program );
 }
 
 } // namespace sim

@@ -6,13 +6,13 @@
 #include "Stereo.hpp"
 #include <GLFW/glfw3.h>
 #include <boost/lockfree/spsc_queue.hpp>
+#include <cstdlib>
 #include <glbinding/gl/gl.h>
 #include <glbinding/glbinding.h>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <portaudiocpp/PortAudioCpp.hxx>
 #include <vector>
-#include <cstdlib>
 
 const gl::GLsizei WIDTH = 800;
 const gl::GLsizei HEIGHT = 608;
@@ -20,7 +20,7 @@ const gl::GLsizei HEIGHT = 608;
 int main( void )
 {
     std::string resourcesPath;
-    if (const char *visuaDir = std::getenv("VISUA_RESOURCES_PATH"))
+    if ( const char *visuaDir = std::getenv( "VISUA_RESOURCES_PATH" ) )
         resourcesPath = visuaDir;
     else
         resourcesPath = "./resources";
@@ -29,7 +29,7 @@ int main( void )
     portaudio::System &sys = portaudio::System::instance();
 
     std::cout << "Listing devices:" << std::endl;
-    sfx::listDevices(sys);
+    sfx::listDevices( sys );
 
     std::cout << "Searching for PipeWire device..." << std::endl;
     portaudio::Device *pulse = sfx::findDeviceByName( sys, "pulse" );
@@ -46,7 +46,7 @@ int main( void )
     if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
         sim::run( *window, rbuf, resourcesPath );
     } else {
-        throw std::runtime_error("failed to create GLFW window");
+        throw std::runtime_error( "failed to create GLFW window" );
     }
 
     return 0;
