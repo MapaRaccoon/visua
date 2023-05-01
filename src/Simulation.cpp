@@ -15,9 +15,9 @@ namespace sim
 
 using namespace gl;
 
-void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf )
+void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf, std::string resourcesPath )
 {
-    auto program = makeShaderProgram();
+    auto program = makeShaderProgram( resourcesPath );
 
     // clang-format off
     static const GLfloat triangleVerts [] = {
@@ -88,13 +88,19 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf 
     glDeleteVertexArrays( 1, &va );
 }
 
-gfx::Program makeShaderProgram()
+gfx::Program makeShaderProgram( std::string resourcesPath )
 {
-    auto vertexShader = gfx::Shader::fromFile( gfx::ShaderType::Vertex, "resources/shaders/vert.glsl" );
+    auto vertexShader = gfx::Shader::fromFile( 
+        gfx::ShaderType::Vertex,
+        resourcesPath + "/shaders/vert.glsl"
+    );
     if ( !vertexShader )
         throw std::runtime_error( "error creating vertex shader: " + vertexShader.error().error );
 
-    auto fragmentShader = gfx::Shader::fromFile( gfx::ShaderType::Fragment, "resources/shaders/frag.glsl" );
+    auto fragmentShader = gfx::Shader::fromFile(
+        gfx::ShaderType::Fragment,
+        resourcesPath + "/shaders/frag.glsl"
+    );
     if ( !fragmentShader )
         throw std::runtime_error( "error creating fragment shader: " + fragmentShader.error().error );
 

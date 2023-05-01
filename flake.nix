@@ -49,16 +49,6 @@
         name = "visua";
         inherit buildInputs;
         inherit nativeBuildInputs;
-        postInstall = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
-          # wrap binary so alsa can find its plugins
-          mv $out/bin/visua $out/bin/_visua
-          echo "#!/bin/sh" > $out/bin/visua
-          echo "ALSA_PLUGIN_DIR=${pkgs.alsa-plugins}/lib/alsa-lib nixGL $out/bin/_visua" >> $out/bin/visua
-          chmod a+x $out/bin/visua
-
-          # copy over compile commands for clangd
-          cp compile_commands.json $out/
-        '';
         src = ./.;
       };
 
@@ -66,6 +56,10 @@
         buildInputs = buildInputs ++ [
           pkgs.pkg-config
         ];
+        shellHook = ''
+          export ALSA_PLUGIN_DIR=${pkgs.alsa-plugins}/lib/alsa-lib
+          export VISUA_RESOURCES_DIR=$out/resources/shaders
+        '';
       };
     };
 }

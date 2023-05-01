@@ -82,7 +82,7 @@ GLProgram::~GLProgram()
 Shader::Shader( raii::GLShader &&shader ) : internal( std::move( shader ) ) { }
 Program::Program( raii::GLProgram &&program ) : internal( std::move( program ) ) { }
 
-std::expected<Shader, ShaderError> Shader::create( ShaderType shaderType, const std::string &code )
+tl::expected<Shader, ShaderError> Shader::create( ShaderType shaderType, const std::string &code )
 {
     raii::GLShader shader( shaderType );
 
@@ -98,16 +98,16 @@ std::expected<Shader, ShaderError> Shader::create( ShaderType shaderType, const 
     if ( logLength > 0 ) {
         std::vector<char> errorMessage( logLength + 1 );
         glGetShaderInfoLog( shader.id, logLength, NULL, errorMessage.data() );
-        return std::unexpected( ShaderError{ .error = std::string( errorMessage.data() ) } );
+        return tl::unexpected( ShaderError{ .error = std::string( errorMessage.data() ) } );
     }
     return Shader( std::move( shader ) );
 }
 
-std::expected<Shader, ShaderError> Shader::fromFile( ShaderType shaderType, const std::string &filePath )
+tl::expected<Shader, ShaderError> Shader::fromFile( ShaderType shaderType, const std::string &filePath )
 {
     const std::ifstream in( filePath, std::ios::in );
     if ( in.fail() )
-        return std::unexpected( ShaderError{ .error = "file not found: " + filePath } );
+        return tl::unexpected( ShaderError{ .error = "file not found: " + filePath } );
 
     std::stringstream buf;
     buf << in.rdbuf();
@@ -115,7 +115,7 @@ std::expected<Shader, ShaderError> Shader::fromFile( ShaderType shaderType, cons
     return create( shaderType, buf.str() );
 }
 
-std::expected<Program, ShaderError> Program::create( std::vector<Shader> &shaders )
+tl::expected<Program, ShaderError> Program::create( std::vector<Shader> &shaders )
 {
     raii::GLProgram program;
     for ( auto &shader : shaders ) {
@@ -136,7 +136,7 @@ std::expected<Program, ShaderError> Program::create( std::vector<Shader> &shader
     if ( logLength > 0 && !linkSuccessful ) {
         std::vector<char> errorMessage( logLength + 1 );
         glGetProgramInfoLog( program.id, logLength, NULL, errorMessage.data() );
-        return std::unexpected( ShaderError{ .error = std::string( errorMessage.data() ) } );
+        return tl::unexpected( ShaderError{ .error = std::string( errorMessage.data() ) } );
     }
 
     return Program( std::move( program ) );

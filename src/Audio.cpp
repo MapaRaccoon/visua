@@ -8,12 +8,12 @@
 namespace sfx
 {
 
-portaudio::Device *findPulseDevice( portaudio::System &sys )
+portaudio::Device *findDeviceByName( portaudio::System &sys, const std::string &name )
 {
     // loop through devices found on the system
     for ( auto &&devIter = sys.devicesBegin(); devIter != sys.devicesEnd(); devIter++ ) {
         // find PulseAudio device, called "pulse"
-        if ( devIter->name() == std::string( "pipewire" ) ) {
+        if ( devIter->name() == name ) {
             // Dereference iterator into Device, then get the address
             // This device is owned by the system
             return &*devIter;

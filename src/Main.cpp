@@ -12,12 +12,19 @@
 #include <iostream>
 #include <portaudiocpp/PortAudioCpp.hxx>
 #include <vector>
+#include <cstdlib>
 
 const gl::GLsizei WIDTH = 800;
 const gl::GLsizei HEIGHT = 608;
 
 int main( void )
 {
+    std::string resourcesPath;
+    if (const char *visuaDir = std::getenv("VISUA_RESOURCES_PATH"))
+        resourcesPath = visuaDir;
+    else
+        resourcesPath = "./resources";
+
     portaudio::AutoSystem autoSys;
     portaudio::System &sys = portaudio::System::instance();
 
@@ -25,7 +32,7 @@ int main( void )
     sfx::listDevices(sys);
 
     std::cout << "Searching for PipeWire device..." << std::endl;
-    portaudio::Device *pulse = sfx::findPulseDevice( sys );
+    portaudio::Device *pulse = sfx::findDeviceByName( sys, "pulse" );
     if ( !pulse )
         throw std::runtime_error( "pulse device not found" );
 
@@ -37,7 +44,7 @@ int main( void )
 
     // OpenGL stuff
     if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
-        sim::run( *window, rbuf );
+        sim::run( *window, rbuf, resourcesPath );
     } else {
         throw std::runtime_error("failed to create GLFW window");
     }

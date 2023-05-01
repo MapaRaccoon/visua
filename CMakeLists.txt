@@ -13,17 +13,25 @@ find_package(portaudio REQUIRED)
 find_package(portaudiocpp REQUIRED)
 find_package(ALSA REQUIRED)
 find_package(Boost REQUIRED)
+find_package(FFTW REQUIRED)
 
 set(PORTAUDIO_COMMON_PATH "${CMAKE_SOURCE_DIR}/external/portaudio/common")
 file ( GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${PORTAUDIO_COMMON_PATH}/*.c" )
-message("${SOURCES}")
+message("${CMAKE_SOURCE_DIR}/external/include")
+message("${CMAKE_SOURCE_DIR}/external/include")
+message("${CMAKE_SOURCE_DIR}/external/include")
+message("${CMAKE_SOURCE_DIR}/external/include")
+message("${CMAKE_SOURCE_DIR}/external/include")
+message("${CMAKE_SOURCE_DIR}/external/include")
 add_executable(visua ${SOURCES})
 
 target_include_directories(visua PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/external/include
     ${PORTAUDIO_INCLUDE_DIRS}
     ${PORTAUDIO_CPP_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${FFTW_INCLUDE_DIRS}
 )
 
 target_link_libraries(visua PRIVATE 
@@ -34,6 +42,11 @@ target_link_libraries(visua PRIVATE
     ${PORTAUDIO_LIBRARIES}
     ${PORTAUDIO_CPP_LIBRARIES}
     ALSA::ALSA
+    ${FFTW_LIBRARIES}
 )
 
 install( TARGETS visua DESTINATION bin )
+
+add_custom_command(TARGET visua POST_BUILD
+    COMMAND ${CMAKE_SOURCE_DIR}/scripts/post-build.sh
+)

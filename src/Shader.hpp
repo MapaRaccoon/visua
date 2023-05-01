@@ -2,6 +2,7 @@
 
 #include <glbinding/gl/gl.h>
 #include <expected>
+#include "tl/expected.hpp"
 
 namespace gfx
 {
@@ -53,8 +54,8 @@ GLenum shaderTypeToEnum( ShaderType shaderType );
 class Shader
 {
   public:
-    static std::expected<Shader, ShaderError> create( ShaderType shaderType, const std::string &code );
-    static std::expected<Shader, ShaderError> fromFile( ShaderType shaderType, const std::string &filePath );
+    static tl::expected<Shader, ShaderError> create( ShaderType shaderType, const std::string &code );
+    static tl::expected<Shader, ShaderError> fromFile( ShaderType shaderType, const std::string &filePath );
     raii::GLShader internal;
 
   private:
@@ -64,7 +65,7 @@ class Shader
 class Program
 {
   public:
-    static std::expected<Program, ShaderError> create( std::vector<Shader> &shaders );
+    static tl::expected<Program, ShaderError> create( std::vector<Shader> &shaders );
     raii::GLProgram internal;
     void use();
 

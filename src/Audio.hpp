@@ -19,7 +19,7 @@ int audioCallback(
     void *userData
 );
 
-portaudio::Device *findPulseDevice( portaudio::System &sys );
+portaudio::Device *findDeviceByName( portaudio::System &sys, const std::string &name );
 void listDevices( portaudio::System &sys );
 portaudio::FunCallbackStream createInputStream(
     portaudio::Device &device,
