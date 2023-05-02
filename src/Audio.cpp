@@ -5,6 +5,9 @@
 
 #include "Stereo.hpp"
 
+#include <cmath>
+#include <fftw3.h>
+
 namespace sfx
 {
 
@@ -36,26 +39,8 @@ void listDevices( portaudio::System &sys )
     }
 }
 
-int audioCallback(
-    const void *inputBuffer,
-    void *outputBuffer,
-    unsigned long numFrames,
-    const PaStreamCallbackTimeInfo *timeInfo,
-    PaStreamCallbackFlags statusFlags,
-    void *userData
-)
-{
-    auto rbuf = static_cast<boost::lockfree::spsc_queue<Stereo<float>> *>( userData );
-    const Stereo<float> *in = static_cast<const Stereo<float> *>( inputBuffer );
-    if (!rbuf->read_available())
-      rbuf->push( in, numFrames );
-
-    return paContinue;
-}
-
-portaudio::FunCallbackStream createInputStream(
+portaudio::StreamParameters getInputStreamParameters(
     portaudio::Device &device,
-    boost::lockfree::spsc_queue<Stereo<float>> &buffer,
     unsigned long framesPerBuffer,
     double sampleRate
 )
@@ -70,15 +55,13 @@ portaudio::FunCallbackStream createInputStream(
         NULL                                               // hostApiSpecifiStreamInfo
     );
 
-    portaudio::StreamParameters params(                       //
+    return portaudio::StreamParameters(                       //
         inParams,                                             // inputParameters
         portaudio::DirectionSpecificStreamParameters::null(), // outpuParameters
         sampleRate,                                           // sampleRate
         framesPerBuffer,                                      // framesPerBuffer
         paClipOff                                             // flags
     );
-
-    return portaudio::FunCallbackStream( params, &sfx::audioCallback, &buffer );
 }
 
 StreamGuard::StreamGuard( portaudio::Stream &stream ) : stream_( stream )
@@ -88,6 +71,51 @@ StreamGuard::StreamGuard( portaudio::Stream &stream ) : stream_( stream )
 StreamGuard::~StreamGuard()
 {
     stream_.stop();
+}
+
+PlaybackToFFT::PlaybackToFFT(
+    boost::lockfree::spsc_queue<float> &freqOut,
+    std::span<fftw_complex> fftIn,
+    std::span<fftw_complex> fftOut,
+    fftw_plan &fftPlan
+)
+    : mFreqOut( freqOut )
+    , mFftIn( fftIn )
+    , mFftOut( fftOut )
+    , mFftPlan( fftPlan )
+{
+}
+
+int PlaybackToFFT::callback(
+    const void *inputBuffer,
+    void *outputBuffer,
+    unsigned long numFrames,
+    const PaStreamCallbackTimeInfo *timeInfo,
+    PaStreamCallbackFlags statusFlags
+)
+{
+    // assuming all the buffers are of size `numFrames`
+
+    // if output buffer is nonempty, skip
+    if ( mFreqOut.read_available() )
+        return paContinue;
+
+    const Stereo<float> *in = static_cast<const Stereo<float> *>( inputBuffer );
+
+    // do FFT
+    for ( int i = 0; i < numFrames; i++ ) {
+        mFftIn [ i ][ 0 ] = 0.5 * ( in [ i ].left + in [ i ].right );
+        mFftIn [ i ][ 1 ] = 0;
+    }
+    fftw_execute( mFftPlan );
+
+    for ( int i = 0; i < numFrames; i++ ) {
+        const fftw_complex &val = mFftOut [ i ];
+        const float amp = std::sqrt( val [ 0 ] * val [ 0 ] + val [ 1 ] * val [ 1 ] );
+        mFreqOut.push( &amp, 1 );
+    }
+
+    return paContinue;
 }
 
 } // namespace sfx

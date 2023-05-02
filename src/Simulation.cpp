@@ -15,7 +15,7 @@ namespace sim
 
 using namespace gl;
 
-void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf, std::string resourcesPath )
+void run( gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::string resourcesPath )
 {
     auto program = makeShaderProgram( resourcesPath );
 
@@ -43,7 +43,7 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf,
     glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-    std::vector<Stereo<float>> buf( sfx::FRAMES_PER_BUFFER );
+    std::vector<float> buf( sfx::FRAMES_PER_BUFFER );
     std::vector<float> texData( sfx::FRAMES_PER_BUFFER );
     while ( !window.shouldClose() ) {
         if ( window.isKeyDown( GLFW_KEY_Q ) )
@@ -56,8 +56,7 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<Stereo<float>> &rbuf,
         // populate texture data from sound
         size_t numRead = rbuf.pop( buf.data(), sfx::FRAMES_PER_BUFFER );
         for ( int i = 0; i < numRead; i++ ) {
-            texData [ i ] = std::abs( 0.5 * ( buf [ i ].left + buf [ i ].right ) );
-            std::cout << texData [ i ] << std::endl;
+            texData [ i ] = std::abs( buf [ i ] );
         }
         glTexImage1D( GL_TEXTURE_1D, 0, GL_RED, numRead, 0, GL_RED, GL_FLOAT, texData.data() );
         glGenerateMipmap( GL_TEXTURE_1D );

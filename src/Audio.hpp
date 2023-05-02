@@ -2,7 +2,9 @@
 
 #include "Stereo.hpp"
 #include <boost/lockfree/spsc_queue.hpp>
+#include <fftw3.h>
 #include <portaudiocpp/PortAudioCpp.hxx>
+#include <span>
 
 namespace sfx
 {
@@ -10,20 +12,35 @@ namespace sfx
 const double SAMPLE_RATE = 44100.0;
 const int FRAMES_PER_BUFFER = 1024;
 
-int audioCallback(
-    const void *inputBuffer,
-    void *outputBuffer,
-    unsigned long numFrames,
-    const PaStreamCallbackTimeInfo *timeInfo,
-    PaStreamCallbackFlags statusFlags,
-    void *userData
-);
+class PlaybackToFFT
+{
+  public:
+    PlaybackToFFT(
+        boost::lockfree::spsc_queue<float> &freqOut,
+        std::span<fftw_complex> fftIn,
+        std::span<fftw_complex> fftOut,
+        fftw_plan &fftPlan
+    );
+
+    int callback(
+        const void *inputBuffer,
+        void *outputBuffer,
+        unsigned long numFrames,
+        const PaStreamCallbackTimeInfo *timeInfo,
+        PaStreamCallbackFlags statusFlags
+    );
+
+  private:
+    boost::lockfree::spsc_queue<float> &mFreqOut;
+    std::span<fftw_complex> mFftIn;
+    std::span<fftw_complex> mFftOut;
+    fftw_plan &mFftPlan;
+};
 
 portaudio::Device *findDeviceByName( portaudio::System &sys, const std::string &name );
 void listDevices( portaudio::System &sys );
-portaudio::FunCallbackStream createInputStream(
+portaudio::StreamParameters getInputStreamParameters(
     portaudio::Device &device,
-    boost::lockfree::spsc_queue<Stereo<float>> &buffer,
     unsigned long framesPerBuffer,
     double sampleRate
 );
