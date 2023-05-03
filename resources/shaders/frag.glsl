@@ -15,7 +15,7 @@ void main() {
     //float sat = (sin(mag * 2 * PI * 5 ) + 1)/4;
     //float sat = 1;
     //color = hsv2rgb(vec3(hue, sat, 1.0f));
-    float val = texture(tex, mag).r;
+    float val = texture(tex, mag/4).r;
     color = hsv2rgb(vec3(val, 1, 1));
 }
 
