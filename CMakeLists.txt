@@ -17,12 +17,6 @@ find_package(FFTW REQUIRED)
 
 set(PORTAUDIO_COMMON_PATH "${CMAKE_SOURCE_DIR}/external/portaudio/common")
 file ( GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${PORTAUDIO_COMMON_PATH}/*.c" )
-message("${CMAKE_SOURCE_DIR}/external/include")
-message("${CMAKE_SOURCE_DIR}/external/include")
-message("${CMAKE_SOURCE_DIR}/external/include")
-message("${CMAKE_SOURCE_DIR}/external/include")
-message("${CMAKE_SOURCE_DIR}/external/include")
-message("${CMAKE_SOURCE_DIR}/external/include")
 add_executable(visua ${SOURCES})
 
 target_include_directories(visua PRIVATE
