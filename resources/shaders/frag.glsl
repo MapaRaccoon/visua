@@ -18,13 +18,13 @@ uniform sampler1D tex;
 uniform Parameters params;
 
 vec3 hsv2rgb(vec3 c);
-float norm(vec2 vec);
+float pNorm(vec2 vec, float p);
 
-float wiggleOffset = 4.0;
-float wiggleScale = 0.2;
-float wigglesPerRevolution = 16;
-float wigglePhase = 0;
-float normExponent = 2.0/3;
+// float wiggleOffset = 4.0;
+// float wiggleScale = 0.2;
+// float wigglesPerRevolution = 16;
+// float wigglePhase = 0;
+// float normExponent = 2.0/3;
 
 void main() {
     float mag = pNorm(vPos, params.normExponent);
@@ -32,7 +32,7 @@ void main() {
     float hue = texture(
         tex, 
         mag / (
-            params.wiggleOffset + params.wiggleScale * sin(
+            params.wiggleOffset + params.wiggleAmplitude * sin(
                 (angle + params.wigglePhase) * params.wigglesPerRevolution
             )
         )

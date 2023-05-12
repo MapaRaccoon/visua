@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # copy over shaders
-cp -r ../resources $out/resources
+cp -r ../resources $out
 
 # wrap binary so alsa can find its plugins
 mkdir -p $out/bin

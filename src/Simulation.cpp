@@ -15,7 +15,23 @@ namespace sim
 
 using namespace gl;
 
-void run( gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::string resourcesPath )
+Parameters ConstParameterProvider::getParameters()
+{
+    return Parameters {
+        .wiggleOffset = 4.0,
+        .wiggleAmplitude = 0.2,
+        .wigglesPerRevolution = 16,
+        .wigglePhase = 0,
+        .normExponent = 2.0/3
+    };
+}
+
+void run(
+    gfx::Window &window,
+    boost::lockfree::spsc_queue<float> &rbuf,
+    std::string resourcesPath,
+    IParameterProvider &parameterProvider
+)
 {
     auto program = makeShaderProgram( resourcesPath );
 
@@ -43,11 +59,25 @@ void run( gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::st
     glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
+    // uniform
+    GLuint paramsWiggleOffsetLoc = glGetUniformLocation(program, "params.wiggleOffset");
+    GLuint paramsWiggleAmplitudeLoc = glGetUniformLocation(program, "params.wiggleAmplitude");
+    GLuint paramsWigglesPerRevolutionLoc = glGetUniformLocation(program, "params.wigglesPerRevolution");
+    GLuint paramsWigglePhaseLoc = glGetUniformLocation(program, "params.wigglePhase");
+    GLuint paramsNormExponentLoc = glGetUniformLocation(program, "params.normExponent");
+
     std::vector<float> buf( sfx::FRAMES_PER_BUFFER );
     std::vector<float> texData( sfx::FRAMES_PER_BUFFER );
     while ( !window.shouldClose() ) {
         if ( window.isKeyDown( GLFW_KEY_Q ) )
             window.setShouldClose( true );
+
+        Parameters params = parameterProvider.getParameters();
+        glUniform1f(paramsWiggleOffsetLoc, params.wiggleOffset);
+        glUniform1f(paramsWiggleAmplitudeLoc, params.wiggleAmplitude);
+        glUniform1f(paramsWigglesPerRevolutionLoc, params.wigglesPerRevolution);
+        glUniform1f(paramsWigglePhaseLoc, params.wigglePhase);
+        glUniform1f(paramsNormExponentLoc, params.normExponent);
 
         // wait for full buffer
         while ( rbuf.write_available() )

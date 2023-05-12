@@ -147,6 +147,11 @@ void Program::use()
     glUseProgram( internal.id );
 }
 
+Program::operator GLuint() const
+{
+    return this->internal.id;
+}
+
 GLenum shaderTypeToEnum( ShaderType shaderType )
 {
     switch ( shaderType ) {

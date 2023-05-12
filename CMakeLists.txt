@@ -14,6 +14,7 @@ find_package(portaudiocpp REQUIRED)
 find_package(ALSA REQUIRED)
 find_package(Boost REQUIRED)
 find_package(FFTW REQUIRED)
+find_package(ImGui REQUIRED)
 
 set(PORTAUDIO_COMMON_PATH "${CMAKE_SOURCE_DIR}/external/portaudio/common")
 file ( GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${PORTAUDIO_COMMON_PATH}/*.c" )
@@ -37,6 +38,7 @@ target_link_libraries(visua PRIVATE
     ${PORTAUDIO_CPP_LIBRARIES}
     ALSA::ALSA
     ${FFTW_LIBRARIES}
+    ImGui::ImGui
 )
 
 install( TARGETS visua DESTINATION bin )

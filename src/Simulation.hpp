@@ -11,15 +11,22 @@ namespace sim
 struct Parameters
 {
     float wiggleOffset;
-    float wiggleScale;
+    float wiggleAmplitude;
     float wigglesPerRevolution;
+    float wigglePhase;
     float normExponent;
 };
 
-class IParameterProvider
+struct IParameterProvider
 {
     virtual Parameters getParameters() = 0;
-    virtual ~IParameterProvider();
+    virtual ~IParameterProvider() = default;
+};
+
+struct ConstParameterProvider : IParameterProvider
+{
+    Parameters params;
+    Parameters getParameters() override;
 };
 
 void run(

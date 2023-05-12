@@ -37,10 +37,12 @@ int main( void )
         throw std::runtime_error( "pulse device not found" );
 
     boost::lockfree::spsc_queue<float> rbuf( sfx::FRAMES_PER_BUFFER );
-    fftw_complex *fftIn = static_cast<fftw_complex *> (fftw_malloc(sizeof(fftw_complex) * sfx::FRAMES_PER_BUFFER));
-    fftw_complex *fftOut = static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex) * sfx::FRAMES_PER_BUFFER));
-    fftw_plan fftPlan = fftw_plan_dft_1d(sfx::FRAMES_PER_BUFFER, fftIn, fftOut, FFTW_FORWARD, FFTW_MEASURE);
-    sfx::PlaybackToFFT fftOutputPlayback(rbuf, { fftIn, sfx::FRAMES_PER_BUFFER }, { fftOut, sfx::FRAMES_PER_BUFFER }, fftPlan);
+    fftw_complex *fftIn = static_cast<fftw_complex *>( fftw_malloc( sizeof( fftw_complex ) * sfx::FRAMES_PER_BUFFER ) );
+    fftw_complex *fftOut =
+        static_cast<fftw_complex *>( fftw_malloc( sizeof( fftw_complex ) * sfx::FRAMES_PER_BUFFER ) );
+    fftw_plan fftPlan = fftw_plan_dft_1d( sfx::FRAMES_PER_BUFFER, fftIn, fftOut, FFTW_FORWARD, FFTW_MEASURE );
+    sfx::PlaybackToFFT
+        fftOutputPlayback( rbuf, { fftIn, sfx::FRAMES_PER_BUFFER }, { fftOut, sfx::FRAMES_PER_BUFFER }, fftPlan );
 
     {
         std::cout << "Starting stream" << std::endl;
@@ -48,17 +50,18 @@ int main( void )
         auto stream = portaudio::MemFunCallbackStream( streamParams, fftOutputPlayback, &sfx::PlaybackToFFT::callback );
         auto streamInputGuard = sfx::StreamGuard( stream );
 
+        sim::ConstParameterProvider parameterProvider;
         // OpenGL stuff
         if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
-            sim::run( *window, rbuf, resourcesPath );
+            sim::run( *window, rbuf, resourcesPath, parameterProvider );
         } else {
             throw std::runtime_error( "failed to create GLFW window" );
         }
     }
 
-    fftw_destroy_plan(fftPlan);
-    fftw_free(fftIn);
-    fftw_free(fftOut);
+    fftw_destroy_plan( fftPlan );
+    fftw_free( fftIn );
+    fftw_free( fftOut );
 
     return 0;
 }

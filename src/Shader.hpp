@@ -68,6 +68,7 @@ class Program
     static tl::expected<Program, ShaderError> create( std::vector<Shader> &shaders );
     raii::GLProgram internal;
     void use();
+    operator GLuint() const;
 
   private:
     Program( raii::GLProgram &&program );
