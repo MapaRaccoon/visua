@@ -27,11 +27,12 @@ class Window
     void swapBuffers();
     void setShouldClose( bool );
 
+    GLFWwindow *glfwWindow;
+
   private:
     std::string name_;
     gl::GLsizei width_;
     gl::GLsizei height_;
-    GLFWwindow *glfwWindow_;
     bool isMovedFrom_;
 };
 

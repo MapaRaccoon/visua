@@ -29,7 +29,7 @@ Window::Window( Window &&other ) : isMovedFrom_( false )
     std::swap( other.name_, this->name_ );
     std::swap( other.width_, this->width_ );
     std::swap( other.height_, this->height_ );
-    std::swap( other.glfwWindow_, this->glfwWindow_ );
+    std::swap( other.glfwWindow, this->glfwWindow );
 
     other.isMovedFrom_ = true;
 }
@@ -42,7 +42,7 @@ Window &Window::operator=( Window &&other )
     std::swap( other.name_, this->name_ );
     std::swap( other.width_, this->width_ );
     std::swap( other.height_, this->height_ );
-    std::swap( other.glfwWindow_, this->glfwWindow_ );
+    std::swap( other.glfwWindow, this->glfwWindow );
 
     other.isMovedFrom_ = true;
 
@@ -64,7 +64,7 @@ std::optional<Window> Window::create( std::string name, gl::GLsizei width, gl::G
         return {};
     }
     Window window( name, width, height );
-    window.glfwWindow_ = glfwWindow;
+    window.glfwWindow = glfwWindow;
 
     glfwMakeContextCurrent( glfwWindow );
     glbinding::initialize( glfwGetProcAddress );
@@ -83,17 +83,17 @@ Window::~Window()
 
 bool Window::shouldClose()
 {
-    return glfwWindowShouldClose( glfwWindow_ );
+    return glfwWindowShouldClose( glfwWindow );
 }
 
 void Window::swapBuffers()
 {
-    glfwSwapBuffers( glfwWindow_ );
+    glfwSwapBuffers( glfwWindow );
 }
 
 int Window::getKey( int key )
 {
-    return glfwGetKey( glfwWindow_, key );
+    return glfwGetKey( glfwWindow, key );
 }
 
 void framebufferSizeCallback( GLFWwindow *window, int width, int height )
@@ -108,7 +108,7 @@ void glfwError( int error, char const *msg )
 
 void Window::setShouldClose( bool shouldClose )
 {
-    glfwSetWindowShouldClose( glfwWindow_, shouldClose );
+    glfwSetWindowShouldClose( glfwWindow, shouldClose );
 }
 
 bool Window::isKeyDown( int key )

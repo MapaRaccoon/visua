@@ -10,6 +10,10 @@
 #include <glbinding/gl/gl.h>
 #include <glbinding/glbinding.h>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 namespace sim
 {
 
@@ -26,6 +30,10 @@ Parameters ConstParameterProvider::getParameters()
     };
 }
 
+void setupImgui()
+{
+}
+
 void run(
     gfx::Window &window,
     boost::lockfree::spsc_queue<float> &rbuf,
@@ -33,6 +41,12 @@ void run(
     IParameterProvider &parameterProvider
 )
 {
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window.glfwWindow, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
     auto program = makeShaderProgram( resourcesPath );
 
     // clang-format off
@@ -68,11 +82,23 @@ void run(
 
     std::vector<float> buf( sfx::FRAMES_PER_BUFFER );
     std::vector<float> texData( sfx::FRAMES_PER_BUFFER );
+    Parameters params = parameterProvider.getParameters();
     while ( !window.shouldClose() ) {
         if ( window.isKeyDown( GLFW_KEY_Q ) )
             window.setShouldClose( true );
 
-        Parameters params = parameterProvider.getParameters();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Options");
+        ImGui::SliderFloat("Wiggle offset", &params.wiggleOffset, 2.0f, 10.0f);
+        ImGui::SliderFloat("Wiggle amplitude", &params.wiggleAmplitude, 0.0f, 0.5f);
+        ImGui::SliderFloat("Wiggles per revolution", &params.wigglesPerRevolution, 1, 64);
+        ImGui::SliderFloat("Wiggle phase", &params.wigglePhase, 0.0f, 6.28f);
+        ImGui::SliderFloat("Star Shape", &params.normExponent, 0.1f, 2.0f);
+        ImGui::End();
+
         glUniform1f(paramsWiggleOffsetLoc, params.wiggleOffset);
         glUniform1f(paramsWiggleAmplitudeLoc, params.wiggleAmplitude);
         glUniform1f(paramsWigglesPerRevolutionLoc, params.wigglesPerRevolution);
@@ -109,9 +135,17 @@ void run(
         glDrawArrays( GL_TRIANGLES, 0, 3 );
         glDisableVertexAttribArray( 0 );
 
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwPollEvents();
         window.swapBuffers();
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     std::cout << "GL cleanup..." << std::endl;
     glDeleteBuffers( 1, &vb );
