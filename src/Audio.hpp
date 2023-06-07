@@ -10,7 +10,7 @@ namespace sfx
 {
 
 const double SAMPLE_RATE = 44100.0;
-const int FRAMES_PER_BUFFER = 1024;
+const int FRAMES_PER_BUFFER = 2048;
 
 class PlaybackToFFT
 {

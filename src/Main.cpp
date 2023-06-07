@@ -2,7 +2,8 @@
 #define GLFW_INCLUDE_NONE
 #include "Audio.hpp"
 #include "Graphics.hpp"
-#include "Simulation.hpp"
+#include "RadialSpectrogram.hpp"
+#include "LinearSpectrogram.hpp"
 #include "Stereo.hpp"
 #include <GLFW/glfw3.h>
 #include <boost/lockfree/spsc_queue.hpp>
@@ -50,10 +51,11 @@ int main( void )
         auto stream = portaudio::MemFunCallbackStream( streamParams, fftOutputPlayback, &sfx::PlaybackToFFT::callback );
         auto streamInputGuard = sfx::StreamGuard( stream );
 
-        sim::ConstParameterProvider parameterProvider;
+        //vis::radial_spectrogram::ConstParameterProvider parameterProvider;
         // OpenGL stuff
         if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
-            sim::run( *window, rbuf, resourcesPath, parameterProvider );
+            //vis::radial_spectrogram::run( *window, rbuf, resourcesPath, parameterProvider );
+            vis::linear_spectrogram::run( *window, rbuf, resourcesPath );
         } else {
             throw std::runtime_error( "failed to create GLFW window" );
         }
