@@ -14,9 +14,54 @@
 #include <iostream>
 #include <portaudiocpp/PortAudioCpp.hxx>
 #include <vector>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 const gl::GLsizei WIDTH = 800;
 const gl::GLsizei HEIGHT = 608;
+
+void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::string resourcesPath)
+{
+    // init gui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL( window.glfwWindow, true );
+    ImGui_ImplOpenGL3_Init( "#version 330" );
+
+    // run visualizer
+    vis::Command next;
+    std::unique_ptr<vis::Visualizer> visualizer = std::make_unique<vis::LinearSpectrogram>(resourcesPath, rbuf);
+    while ( !window.shouldClose() ) {
+        if ( window.isKeyDown( GLFW_KEY_Q ) )
+            window.setShouldClose( true );
+
+        next = visualizer->step();
+        if (next == vis::Command::Quit) {
+            window.setShouldClose( true );
+        } else if (next == vis::Command::SwitchToRadial) {
+            visualizer = std::make_unique<vis::RadialSpectrogram>(resourcesPath, rbuf);
+            continue;
+        } else if (next == vis::Command::SwitchToLinear) {
+            visualizer = std::make_unique<vis::LinearSpectrogram>(resourcesPath, rbuf);
+            continue;
+        }
+
+        visualizer->doUi();
+        visualizer->draw();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+
+        glfwPollEvents();
+        window.swapBuffers();
+    }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+}
 
 int main( void )
 {
@@ -45,20 +90,16 @@ int main( void )
     sfx::PlaybackToFFT
         fftOutputPlayback( rbuf, { fftIn, sfx::FRAMES_PER_BUFFER }, { fftOut, sfx::FRAMES_PER_BUFFER }, fftPlan );
 
-    {
-        std::cout << "Starting stream" << std::endl;
-        auto streamParams = sfx::getInputStreamParameters( *pulse, sfx::FRAMES_PER_BUFFER, sfx::SAMPLE_RATE );
-        auto stream = portaudio::MemFunCallbackStream( streamParams, fftOutputPlayback, &sfx::PlaybackToFFT::callback );
-        auto streamInputGuard = sfx::StreamGuard( stream );
+    // start stream which collects frequency spectrum data into rbuf  
+    std::cout << "Starting stream" << std::endl;
+    auto streamParams = sfx::getInputStreamParameters( *pulse, sfx::FRAMES_PER_BUFFER, sfx::SAMPLE_RATE );
+    auto stream = portaudio::MemFunCallbackStream( streamParams, fftOutputPlayback, &sfx::PlaybackToFFT::callback );
+    auto streamInputGuard = sfx::StreamGuard( stream );
 
-        //vis::radial_spectrogram::ConstParameterProvider parameterProvider;
-        // OpenGL stuff
-        if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
-            //vis::radial_spectrogram::run( *window, rbuf, resourcesPath, parameterProvider );
-            vis::linear_spectrogram::run( *window, rbuf, resourcesPath );
-        } else {
-            throw std::runtime_error( "failed to create GLFW window" );
-        }
+    if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
+        run(*window, rbuf, resourcesPath);
+    } else {
+        throw std::runtime_error( "failed to create GLFW window" );
     }
 
     fftw_destroy_plan( fftPlan );
