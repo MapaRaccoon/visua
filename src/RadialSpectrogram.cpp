@@ -29,8 +29,8 @@ RadialSpectrogram::RadialSpectrogram( std::string resourcesPath, boost::lockfree
             .normExponent = 2.0 / 3 }
       )
     , program( makeShaderProgram( resourcesPath ) )
-    , buf(sfx::FRAMES_PER_BUFFER)
-    , texData(sfx::FRAMES_PER_BUFFER)
+    , buf( sfx::FRAMES_PER_BUFFER )
+    , texData( sfx::FRAMES_PER_BUFFER )
 {
     // clang-format off
     static const GLfloat triangleVerts [] = {
@@ -126,10 +126,12 @@ void RadialSpectrogram::draw()
 
 RadialSpectrogram::~RadialSpectrogram()
 {
+    // TODO: make these RAII
     glDeleteBuffers( 1, &vb );
     glDeleteVertexArrays( 1, &va );
 }
 
+// TODO: move this out into common function for both visualizers
 gfx::Program RadialSpectrogram::makeShaderProgram( std::string resourcesPath )
 {
     auto vertexShader = gfx::Shader::fromFile( gfx::ShaderType::Vertex, resourcesPath + "/shaders/identity.vert" );

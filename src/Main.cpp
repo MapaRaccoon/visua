@@ -79,12 +79,14 @@ int main( void )
     else
         resourcesPath = "./resources";
 
+    // TODO: why does this spam stdout so much
     portaudio::AutoSystem autoSys;
     portaudio::System &sys = portaudio::System::instance();
 
     std::cout << "Listing devices:" << std::endl;
     sfx::listDevices( sys );
 
+    // TODO: cli to choose device
     std::cout << "Searching for PipeWire device..." << std::endl;
     portaudio::Device *pulse = sfx::findDeviceByName( sys, "pulse" );
     if ( !pulse )
@@ -104,6 +106,7 @@ int main( void )
     auto stream = portaudio::MemFunCallbackStream( streamParams, fftOutputPlayback, &sfx::PlaybackToFFT::callback );
     auto streamInputGuard = sfx::StreamGuard( stream );
 
+    // run visualizers
     if ( auto window = gfx::Window::create( "woof", WIDTH, HEIGHT ) ) {
         run(*window, rbuf, resourcesPath);
     } else {

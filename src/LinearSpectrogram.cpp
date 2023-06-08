@@ -51,6 +51,7 @@ LinearSpectrogram::LinearSpectrogram( std::string resourcesPath, boost::lockfree
 
 LinearSpectrogram::~LinearSpectrogram()
 {
+    // TODO: make these RAII
     glDeleteBuffers( 1, &vb );
     glDeleteVertexArrays( 1, &va );
 }
@@ -96,6 +97,7 @@ void LinearSpectrogram::draw()
 
 void LinearSpectrogram::doUi() { }
 
+// TODO: move this out into common function for both visualizers
 gfx::Program LinearSpectrogram::makeShaderProgram( std::string resourcesPath )
 {
     auto vertexShader = gfx::Shader::fromFile( gfx::ShaderType::Vertex, resourcesPath + "/shaders/identity.vert" );
