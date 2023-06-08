@@ -21,6 +21,8 @@
 const gl::GLsizei WIDTH = 800;
 const gl::GLsizei HEIGHT = 608;
 
+// TODO: fix the segfault on quit
+
 void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::string resourcesPath)
 {
     // init gui
