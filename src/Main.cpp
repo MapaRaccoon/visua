@@ -38,6 +38,7 @@ void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::str
             window.setShouldClose( true );
 
         // step visualizer
+        // TODO: take keyboard input to switch visualizers
         next = visualizer->step();
         if (next == vis::Command::Quit) {
             window.setShouldClose( true );
