@@ -94,11 +94,7 @@ void LinearSpectrogram::draw()
     glDisableVertexAttribArray( 0 );
 }
 
-void LinearSpectrogram::doUi() {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-}
+void LinearSpectrogram::doUi() { }
 
 gfx::Program LinearSpectrogram::makeShaderProgram( std::string resourcesPath )
 {

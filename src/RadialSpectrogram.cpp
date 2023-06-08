@@ -88,10 +88,6 @@ void RadialSpectrogram::updateUniforms()
 
 void RadialSpectrogram::doUi()
 {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
     ImGui::Begin( "Options" );
     ImGui::SliderFloat( "Wiggle offset", &params.wiggleOffset, 2.0f, 10.0f );
     ImGui::SliderFloat( "Wiggle amplitude", &params.wiggleAmplitude, 0.0f, 0.5f );

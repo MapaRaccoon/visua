@@ -37,6 +37,7 @@ void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::str
         if ( window.isKeyDown( GLFW_KEY_Q ) )
             window.setShouldClose( true );
 
+        // step visualizer
         next = visualizer->step();
         if (next == vis::Command::Quit) {
             window.setShouldClose( true );
@@ -48,9 +49,16 @@ void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::str
             continue;
         }
 
+        // make UI
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
         visualizer->doUi();
+
+        // draw visualizer
         visualizer->draw();
 
+        // draw UI
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 
