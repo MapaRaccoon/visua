@@ -12,11 +12,11 @@ namespace vis
 
 using namespace gl;
 
-class LinearSpectrogram : public Visualizer
+class BarsVisualizer : public Visualizer
 {
   public:
-    LinearSpectrogram( std::string resourcesPath, boost::lockfree::spsc_queue<float> &rbuf );
-    ~LinearSpectrogram();
+    BarsVisualizer( std::string resourcesPath, boost::lockfree::spsc_queue<float> &rbuf );
+    ~BarsVisualizer();
     Command step() override;
     void draw() override;
     void doUi() override;

@@ -13,11 +13,11 @@ namespace vis
 
 using namespace gl;
 
-class RadialSpectrogram : public Visualizer
+class StarVisualizer : public Visualizer
 {
   public:
-    RadialSpectrogram( std::string resourcesPath, boost::lockfree::spsc_queue<float> &rbuf );
-    ~RadialSpectrogram();
+    StarVisualizer( std::string resourcesPath, boost::lockfree::spsc_queue<float> &rbuf );
+    ~StarVisualizer();
     Command step() override;
     void draw() override;
     void doUi() override;

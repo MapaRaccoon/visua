@@ -2,8 +2,8 @@
 #define GLFW_INCLUDE_NONE
 #include "Audio.hpp"
 #include "Graphics.hpp"
-#include "RadialSpectrogram.hpp"
-#include "LinearSpectrogram.hpp"
+#include "StarVisualizer.hpp"
+#include "BarsVisualizer.hpp"
 #include "Stereo.hpp"
 #include <GLFW/glfw3.h>
 #include <boost/lockfree/spsc_queue.hpp>
@@ -34,7 +34,7 @@ void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::str
 
     // run visualizer
     vis::Command next;
-    std::unique_ptr<vis::Visualizer> visualizer = std::make_unique<vis::LinearSpectrogram>(resourcesPath, rbuf);
+    std::unique_ptr<vis::Visualizer> visualizer = std::make_unique<vis::BarsVisualizer>(resourcesPath, rbuf);
     while ( !window.shouldClose() ) {
         if ( window.isKeyDown( GLFW_KEY_Q ) )
             window.setShouldClose( true );
@@ -45,10 +45,10 @@ void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::str
         if (next == vis::Command::Quit) {
             window.setShouldClose( true );
         } else if (next == vis::Command::SwitchToRadial) {
-            visualizer = std::make_unique<vis::RadialSpectrogram>(resourcesPath, rbuf);
+            visualizer = std::make_unique<vis::StarVisualizer>(resourcesPath, rbuf);
             continue;
         } else if (next == vis::Command::SwitchToLinear) {
-            visualizer = std::make_unique<vis::LinearSpectrogram>(resourcesPath, rbuf);
+            visualizer = std::make_unique<vis::BarsVisualizer>(resourcesPath, rbuf);
             continue;
         }
 
