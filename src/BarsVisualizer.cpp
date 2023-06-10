@@ -5,13 +5,13 @@
 #include "Graphics.hpp"
 #include "Shader.hpp"
 #include "Stereo.hpp"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include <boost/lockfree/spsc_queue.hpp>
 #include <cmath>
 #include <glbinding/gl/gl.h>
 #include <glbinding/glbinding.h>
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 
 namespace vis
 {
@@ -32,17 +32,14 @@ BarsVisualizer::BarsVisualizer( std::string resourcesPath, boost::lockfree::spsc
     };
     // clang-format on
 
-    GLuint va;
     glGenVertexArrays( 1, &va );
     glBindVertexArray( va );
 
-    GLuint vb;
     glGenBuffers( 1, &vb );
     glBindBuffer( GL_ARRAY_BUFFER, vb );
     glBufferData( GL_ARRAY_BUFFER, sizeof( triangleVerts ), triangleVerts, GL_STATIC_DRAW );
 
     // create texture
-    GLuint tex;
     glGenTextures( 1, &tex );
     glBindTexture( GL_TEXTURE_1D, tex );
     glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -54,12 +51,15 @@ BarsVisualizer::~BarsVisualizer()
     // TODO: make these RAII
     glDeleteBuffers( 1, &vb );
     glDeleteVertexArrays( 1, &va );
+    glDeleteTextures( 1, &tex );
 }
 
 Command BarsVisualizer::step()
 {
     // wait for full buffer
-    if ( rbuf.write_available() ) return Command::Continue;
+    if ( rbuf.write_available() ) {
+        return Command::Continue;
+    }
 
     // populate texture data from sound
     size_t numRead = rbuf.pop( buf.data(), sfx::FRAMES_PER_BUFFER );

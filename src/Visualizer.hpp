@@ -12,8 +12,12 @@ enum class Command
 {
     Continue,
     Quit,
-    SwitchToRadial,
-    SwitchToLinear
+};
+
+enum class VisualizerType
+{
+    Star,
+    Bars
 };
 
 struct Visualizer

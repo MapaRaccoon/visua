@@ -32,6 +32,7 @@ class BarsVisualizer : public Visualizer
 
     GLuint va;
     GLuint vb;
+    GLuint tex;
 };
 
 gfx::Program makeShaderProgram( std::string resourcesPath );

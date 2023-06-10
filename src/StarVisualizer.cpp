@@ -48,7 +48,6 @@ StarVisualizer::StarVisualizer( std::string resourcesPath, boost::lockfree::spsc
     glBufferData( GL_ARRAY_BUFFER, sizeof( triangleVerts ), triangleVerts, GL_STATIC_DRAW );
 
     // create texture
-    GLuint tex;
     glGenTextures( 1, &tex );
     glBindTexture( GL_TEXTURE_1D, tex );
     glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -65,7 +64,8 @@ StarVisualizer::StarVisualizer( std::string resourcesPath, boost::lockfree::spsc
 Command StarVisualizer::step()
 {
     // wait for full buffer
-    if( rbuf.write_available() ) return Command::Continue;
+    if ( rbuf.write_available() )
+        return Command::Continue;
 
     // populate texture data from sound
     size_t numRead = rbuf.pop( buf.data(), sfx::FRAMES_PER_BUFFER );
@@ -128,6 +128,7 @@ StarVisualizer::~StarVisualizer()
     // TODO: make these RAII
     glDeleteBuffers( 1, &vb );
     glDeleteVertexArrays( 1, &va );
+    glDeleteTextures( 1, &tex );
 }
 
 // TODO: move this out into common function for both visualizers

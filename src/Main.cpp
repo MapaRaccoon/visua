@@ -34,22 +34,27 @@ void run(gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::str
 
     // run visualizer
     vis::Command next;
-    std::unique_ptr<vis::Visualizer> visualizer = std::make_unique<vis::BarsVisualizer>(resourcesPath, rbuf);
+    vis::VisualizerType visualizerType = vis::VisualizerType::Star;
+    std::unique_ptr<vis::Visualizer> visualizer = std::make_unique<vis::StarVisualizer>(resourcesPath, rbuf);
     while ( !window.shouldClose() ) {
+        // handle key input
         if ( window.isKeyDown( GLFW_KEY_Q ) )
             window.setShouldClose( true );
 
+        if (window.isKeyDown( GLFW_KEY_1 ) && visualizerType != vis::VisualizerType::Star) {
+            visualizerType = vis::VisualizerType::Star;
+            visualizer = std::make_unique<vis::StarVisualizer>(resourcesPath, rbuf);
+        }
+
+        if (window.isKeyDown( GLFW_KEY_2 ) && visualizerType != vis::VisualizerType::Bars) {
+            visualizerType = vis::VisualizerType::Bars;
+            visualizer = std::make_unique<vis::BarsVisualizer>(resourcesPath, rbuf);
+        }
+
         // step visualizer
-        // TODO: take keyboard input to switch visualizers
         next = visualizer->step();
         if (next == vis::Command::Quit) {
             window.setShouldClose( true );
-        } else if (next == vis::Command::SwitchToRadial) {
-            visualizer = std::make_unique<vis::StarVisualizer>(resourcesPath, rbuf);
-            continue;
-        } else if (next == vis::Command::SwitchToLinear) {
-            visualizer = std::make_unique<vis::BarsVisualizer>(resourcesPath, rbuf);
-            continue;
         }
 
         // make UI

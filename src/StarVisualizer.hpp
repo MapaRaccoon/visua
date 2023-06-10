@@ -52,6 +52,7 @@ class StarVisualizer : public Visualizer
 
     GLuint va;
     GLuint vb;
+    GLuint tex;
 };
 
 void run( gfx::Window &window, boost::lockfree::spsc_queue<float> &rbuf, std::string resourcesPath );
